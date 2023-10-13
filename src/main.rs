@@ -376,7 +376,7 @@ async fn niggers(ctx: &Context, msg: &Message) -> CommandResult {
 }
 
 #[command]
-async fn set_role(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
+async fn set_role(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let color_code = args.current().unwrap_or_default();
 
     match i32::from_str_radix(color_code.trim_start_matches("0x"), 16) {
