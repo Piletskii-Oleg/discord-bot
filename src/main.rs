@@ -5,7 +5,6 @@ use std::sync::Arc;
 
 use serenity::async_trait;
 use serenity::client::bridge::gateway::{ShardManager};
-use serenity::framework::standard::buckets::{LimitedFor};
 use serenity::framework::standard::macros::{help, hook};
 use serenity::framework::standard::{
     help_commands, Args, CommandGroup, CommandResult, DispatchError,
@@ -155,7 +154,8 @@ async fn dispatch_error(ctx: &Context, msg: &Message, error: DispatchError, _com
 
 #[tokio::main]
 async fn main() {
-    // Configure the client with your Discord bot token in the environment.
+    dotenv::dotenv().expect("Provide .env file with the necessary parameters.");
+
     let token = std::env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
 
     let http = Http::new(&token);
