@@ -1,6 +1,3 @@
--- Add migration script here
-DROP TABLE birthdays;
-
 CREATE TABLE birthdays
 (
     user_id     VARCHAR(21) PRIMARY KEY,
