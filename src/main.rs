@@ -16,7 +16,6 @@ use serenity::model::channel::Message;
 use serenity::model::gateway::{GatewayIntents, Ready};
 use serenity::model::id::UserId;
 use serenity::prelude::*;
-use sqlx::Database;
 use tokio::sync::Mutex;
 
 struct ShardManagerContainer;
@@ -37,6 +36,10 @@ struct Handler {
 
 #[async_trait]
 impl EventHandler for Handler {
+    async fn message(&self, _ctx: Context, msg: Message) {
+        if let Some(command) = msg.content.strip_prefix("~birthday") {}
+    }
+
     async fn ready(&self, _: Context, ready: Ready) {
         println!("{} is connected!", ready.user.name);
     }
@@ -48,8 +51,9 @@ impl EventHandler for Handler {
 #[help]
 // This replaces the information that a user can pass
 // a command-name as argument to gain specific information about it.
-#[individual_command_tip = "Hello! こんにちは！Hola! Bonjour! 您好! 안녕하세요~\n\n\
-If you want more information about a specific command, just pass the command as argument."]
+#[individual_command_tip = "Hello!\n
+If you want more information about a specific command, just pass the command as argument, for example:
+\t~help help"]
 // Some arguments require a `{}` in order to replace it with contextual information.
 // In this case our `{}` refers to a command's name.
 #[command_not_found_text = "Could not find: `{}`."]
@@ -193,7 +197,7 @@ async fn main() {
             c.with_whitespace(true)
                 .on_mention(Some(bot_id))
                 .prefix("~")
-                .delimiters(vec![", ", ",", " "])
+                .delimiters(vec![", ", ","])
                 .owners(owners)
         })
         .before(before)

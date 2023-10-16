@@ -11,3 +11,4 @@ tokio = { version = "1.21.2", features = ["macros", "rt-multi-thread"] }
 log = "0.4.20"
 dotenv = "0.15.0"
 sqlx = { version = "0.5.7", features = ["runtime-tokio-rustls", "sqlite", "offline"] }
+chrono = "0.4"
