@@ -122,16 +122,6 @@ async fn unknown_command(ctx: &Context, msg: &Message, unknown_command_name: &st
 }
 
 #[hook]
-async fn normal_message(ctx: &Context, msg: &Message) {
-    println!(
-        "{} <- '{}': {}",
-        msg.channel_id.name(&ctx.cache).await.unwrap(),
-        msg.author.name,
-        msg.content,
-    );
-}
-
-#[hook]
 async fn delay_action(ctx: &Context, msg: &Message) {
     // You may want to handle a Discord rate limit if this fails.
     let _ = msg.react(ctx, '⏱').await;
@@ -169,7 +159,10 @@ async fn main() {
         )
         .await
         .expect("Couldn't connect to database");
-    sqlx::migrate!("./migrations").run(&db).await.expect("Couldn't migrate database.");
+    sqlx::migrate!("./migrations")
+        .run(&db)
+        .await
+        .expect("Couldn't migrate database.");
 
     let (owners, bot_id) = match http.get_current_application_info().await {
         Ok(info) => {
@@ -198,7 +191,6 @@ async fn main() {
         .before(before)
         .after(after)
         .unrecognised_command(unknown_command)
-        .normal_message(normal_message)
         .on_dispatch_error(dispatch_error)
         .help(&MY_HELP)
         .group(&GENERAL_GROUP)

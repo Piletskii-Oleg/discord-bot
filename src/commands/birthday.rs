@@ -23,13 +23,9 @@ async fn mod_menu(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     Ok(())
 }
 
-fn parse_date(date: &str) -> ParseResult<DateTime<FixedOffset>> {
-    let mut date = date.to_owned();
-    date.push_str(".1970 00:00:00 +0300");
-    DateTime::parse_from_str(&date, "%d.%m.%Y %H:%M:%S %z")
-}
-
 #[command]
+#[max_args(1)]
+#[delimiters(" ", ",", ", ")]
 async fn add(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     if let Some(maybe_birthday) = args.current() {
         match parse_date(maybe_birthday) {
@@ -52,29 +48,32 @@ async fn add(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 
                 match query {
                     Err(query_error) => {
-                        println!("Couldn't add birthday. Reason: {:?}", query_error);
                         msg.reply(ctx, "Couldn't add birthday. Probably it already exists.")
                             .await?;
+                        return Err(query_error.into());
                     }
                     Ok(_) => {
-                        let success =
-                            format!("Added {}'s birthday {}.{}", msg.author.name, day, month);
+                        let success = format!(
+                            "Added birthday for user {}: {}",
+                            msg.author.name,
+                            birthday.format("%B %d")
+                        );
                         println!("{success}");
                         msg.channel_id.say(ctx, success).await?;
                     }
                 }
             }
             Err(parse_error) => {
-                println!("Invalid argument: {}", parse_error);
                 msg.channel_id
                     .say(ctx, "Provide a valid date in the format dd.mm.")
                     .await?;
+                return Err(parse_error.into());
             }
         }
     } else {
         println!("No birth day-month argument was provided.");
         msg.channel_id
-            .say(ctx, "Provide a valid date in the format dd.mm.!!!")
+            .say(ctx, "Provide a valid date in the format dd.mm.")
             .await?;
     }
 
@@ -90,4 +89,10 @@ async fn edit(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 #[command]
 async fn remove(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     Ok(())
+}
+
+fn parse_date(date: &str) -> ParseResult<DateTime<FixedOffset>> {
+    let mut date = date.to_owned();
+    date.push_str(".1970 00:00:00 +0300");
+    DateTime::parse_from_str(&date, "%d.%m.%Y %H:%M:%S %z")
 }
