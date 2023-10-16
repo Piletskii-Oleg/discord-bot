@@ -30,9 +30,7 @@ impl TypeMapKey for CommandCounter {
     type Value = HashMap<String, u64>;
 }
 
-struct Handler {
-    database: sqlx::SqlitePool,
-}
+struct Handler;
 
 #[async_trait]
 impl EventHandler for Handler {
@@ -162,7 +160,7 @@ async fn main() {
 
     let http = Http::new(&token);
 
-    let database = sqlx::sqlite::SqlitePoolOptions::new()
+    sqlx::sqlite::SqlitePoolOptions::new()
         .max_connections(5)
         .connect_with(
             sqlx::sqlite::SqliteConnectOptions::new()
@@ -207,7 +205,7 @@ async fn main() {
 
     let intents = GatewayIntents::all();
     let mut client = Client::builder(&token, intents)
-        .event_handler(Handler { database })
+        .event_handler(Handler)
         .framework(framework)
         .type_map_insert::<CommandCounter>(HashMap::default())
         .await
