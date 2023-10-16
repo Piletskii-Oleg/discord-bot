@@ -3,24 +3,22 @@ mod commands;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
+use crate::commands::birthday::BIRTHDAY_GROUP;
+use crate::commands::general::GENERAL_GROUP;
 use serenity::async_trait;
-use serenity::client::bridge::gateway::{ShardManager};
+use serenity::client::bridge::gateway::ShardManager;
 use serenity::framework::standard::macros::{help, hook};
 use serenity::framework::standard::{
-    help_commands, Args, CommandGroup, CommandResult, DispatchError,
-    HelpOptions, StandardFramework,
+    help_commands, Args, CommandGroup, CommandResult, DispatchError, HelpOptions, StandardFramework,
 };
 use serenity::http::Http;
-use serenity::model::channel::{Message};
+use serenity::model::channel::Message;
 use serenity::model::gateway::{GatewayIntents, Ready};
 use serenity::model::id::UserId;
 use serenity::prelude::*;
+use sqlx::Database;
 use tokio::sync::Mutex;
-use crate::commands::general::GENERAL_GROUP;
 
-// A container type is created for inserting into the Client's `data`, which
-// allows for data to be accessible across all events and framework commands, or
-// anywhere else that has a copy of the `data` Arc.
 struct ShardManagerContainer;
 
 impl TypeMapKey for ShardManagerContainer {
@@ -33,7 +31,9 @@ impl TypeMapKey for CommandCounter {
     type Value = HashMap<String, u64>;
 }
 
-struct Handler;
+struct Handler {
+    database: sqlx::SqlitePool,
+}
 
 #[async_trait]
 impl EventHandler for Handler {
@@ -117,7 +117,10 @@ async fn after(_ctx: &Context, _msg: &Message, command_name: &str, command_resul
 #[hook]
 async fn unknown_command(ctx: &Context, msg: &Message, unknown_command_name: &str) {
     println!("Could not find command named '{}'", unknown_command_name);
-    msg.channel_id.say(ctx, "Command not recognised.").await.unwrap();
+    msg.channel_id
+        .say(ctx, "Command not recognised.")
+        .await
+        .unwrap();
 }
 
 #[hook]
@@ -139,7 +142,6 @@ async fn delay_action(ctx: &Context, msg: &Message) {
 #[hook]
 async fn dispatch_error(ctx: &Context, msg: &Message, error: DispatchError, _command_name: &str) {
     if let DispatchError::Ratelimited(info) = error {
-        // We notify them only once.
         if info.is_first_try {
             let _ = msg
                 .channel_id
@@ -159,6 +161,16 @@ async fn main() {
     let token = std::env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
 
     let http = Http::new(&token);
+
+    let database = sqlx::sqlite::SqlitePoolOptions::new()
+        .max_connections(5)
+        .connect_with(
+            sqlx::sqlite::SqliteConnectOptions::new()
+                .filename("database.sqlite")
+                .create_if_missing(true),
+        )
+        .await
+        .expect("Couldn't connect to database");
 
     let (owners, bot_id) = match http.get_current_application_info().await {
         Ok(info) => {
@@ -190,11 +202,12 @@ async fn main() {
         .normal_message(normal_message)
         .on_dispatch_error(dispatch_error)
         .help(&MY_HELP)
-        .group(&GENERAL_GROUP);
+        .group(&GENERAL_GROUP)
+        .group(&BIRTHDAY_GROUP);
 
     let intents = GatewayIntents::all();
     let mut client = Client::builder(&token, intents)
-        .event_handler(Handler)
+        .event_handler(Handler { database })
         .framework(framework)
         .type_map_insert::<CommandCounter>(HashMap::default())
         .await
