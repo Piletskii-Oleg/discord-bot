@@ -1,19 +1,14 @@
+use crate::{CommandCounter, ShardManagerContainer};
 use serenity::client::bridge::gateway::ShardId;
-use serenity::framework::standard::{Args, CommandResult};
 use serenity::framework::standard::macros::{command, group};
+use serenity::framework::standard::{Args, CommandResult};
 use serenity::model::prelude::Message;
 use serenity::prelude::Context;
+use serenity::utils::{content_safe, Color, ContentSafeOptions};
 use std::fmt::Write;
-use serenity::utils::{Color, content_safe, ContentSafeOptions};
-use crate::{CommandCounter, ShardManagerContainer};
 
 #[group]
-#[commands(
-say,
-commands,
-latency,
-set_role,
-)]
+#[commands(say, commands, latency, set_role)]
 struct General;
 
 // Commands can be created via the attribute `#[command]` macro.
@@ -75,21 +70,13 @@ async fn latency(ctx: &Context, msg: &Message) -> CommandResult {
     Ok(())
 }
 
-// Repeats what the user passed as argument but ensures that user and role
-// mentions are replaced with a safe textual alternative.
-// In this example channel mentions are excluded via the `ContentSafeOptions`.
 #[command]
 async fn say(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     match args.single_quoted::<String>() {
         Ok(x) => {
             let settings = if let Some(guild_id) = msg.guild_id {
-                // By default roles, users, and channel mentions are cleaned.
                 ContentSafeOptions::default()
-                    // We do not want to clean channel mentions as they
-                    // do not ping users.
                     .clean_channel(false)
-                    // If it's a guild channel, we want mentioned users to be displayed
-                    // as their display name.
                     .display_as_member_from(guild_id)
             } else {
                 ContentSafeOptions::default()
@@ -111,6 +98,9 @@ async fn say(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 }
 
 #[command]
+#[description("Sets a role with the color given in the format 0xRRGGBB with the name being caller's Discord nickname. If it already exists, changes its color.")]
+#[usage("0xRRGGBB")]
+#[example("0x34EB64")]
 async fn set_role(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let color_code = args.current().unwrap_or_default();
 
@@ -132,11 +122,7 @@ async fn set_role(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     }
 }
 
-async fn modify_role(
-    ctx: &Context,
-    msg: &Message,
-    color: Color,
-) -> CommandResult {
+async fn modify_role(ctx: &Context, msg: &Message, color: Color) -> CommandResult {
     let mut member = msg.member(ctx).await?;
     let guild = msg.guild(ctx).unwrap();
     let user = &member.user;
@@ -145,20 +131,29 @@ async fn modify_role(
         let role = guild
             .edit_role(ctx, role.id, |role| role.colour(color.0 as u64))
             .await?;
-        if member.roles(ctx).is_some_and(|roles| !roles.contains(&role)) {
+        if member
+            .roles(ctx)
+            .is_some_and(|roles| !roles.contains(&role))
+        {
             member.add_role(ctx, role.id).await?;
         }
     } else {
         let role = guild
             .create_role(ctx, |role| {
-                role.colour(color.0 as u64)
-                    .name(&user.name)
-                    .hoist(false)
+                role.colour(color.0 as u64).name(&user.name).hoist(false)
             })
             .await?;
         member.add_role(ctx, role).await?;
     }
 
-    msg.reply(ctx, format!("Successfully set role with the color 0x{} to user {}",color.hex(), &member.user.name)).await?;
+    msg.reply(
+        ctx,
+        format!(
+            "Successfully set role with the color 0x{} to user {}",
+            color.hex(),
+            &member.user.name
+        ),
+    )
+    .await?;
     Ok(())
 }
