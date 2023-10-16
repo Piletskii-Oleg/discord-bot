@@ -154,13 +154,13 @@ async fn dispatch_error(ctx: &Context, msg: &Message, error: DispatchError, _com
 
 #[tokio::main]
 async fn main() {
-    dotenv::dotenv().expect("Provide .env file with the necessary parameters.");
+    dotenvy::dotenv().expect("Provide .env file with the necessary parameters.");
 
     let token = std::env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
 
     let http = Http::new(&token);
 
-    sqlx::sqlite::SqlitePoolOptions::new()
+    let db = sqlx::sqlite::SqlitePoolOptions::new()
         .max_connections(5)
         .connect_with(
             sqlx::sqlite::SqliteConnectOptions::new()
@@ -169,6 +169,7 @@ async fn main() {
         )
         .await
         .expect("Couldn't connect to database");
+    sqlx::migrate!("./migrations").run(&db).await.expect("Couldn't migrate database.");
 
     let (owners, bot_id) = match http.get_current_application_info().await {
         Ok(info) => {
