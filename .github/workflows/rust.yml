@@ -1,4 +1,4 @@
-name: Rust
+name: Build & Test
 
 on:
   push:
@@ -20,7 +20,7 @@ jobs:
       run: |
         cargo install sqlx-cli
         sqlx database setup --database-url sqlite:database.sqlite
-        cargo sqlx prepare --check
+        cargo sqlx prepare --database-url sqlite:database.sqlite --check
         cargo build --verbose
     - name: Run tests
       run: cargo test --verbose
