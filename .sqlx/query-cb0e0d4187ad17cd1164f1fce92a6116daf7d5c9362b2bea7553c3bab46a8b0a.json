@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO birthdays (user_id, birth_day, birth_month, name) VALUES (?, ?, ?, ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": []
+  },
+  "hash": "cb0e0d4187ad17cd1164f1fce92a6116daf7d5c9362b2bea7553c3bab46a8b0a"
+}
