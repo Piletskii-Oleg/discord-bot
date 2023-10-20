@@ -163,7 +163,9 @@ async fn modify_role(ctx: &Context, msg: &Message, color: Color) -> CommandResul
         None => {
             let role = guild
                 .create_role(ctx, |role| {
-                    role.colour(color.0 as u64).name(&member.user.name).hoist(false)
+                    role.colour(color.0 as u64)
+                        .name(&member.user.name)
+                        .hoist(false)
                 })
                 .await?;
             member.add_role(ctx, role).await?;
