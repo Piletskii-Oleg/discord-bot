@@ -186,7 +186,7 @@ async fn get_birthday(db: &mut SqliteConnection, user_id: &str) -> Result<(u64, 
         "SELECT birth_day, birth_month FROM birthdays WHERE user_id = ?",
         user_id
     )
-    .fetch_one(db)Ok(())
+    .fetch_one(db)
     .await
     .and_then(|x| Ok((x.birth_day as u64, x.birth_month as u64)))
 }
