@@ -5,21 +5,20 @@ use serenity::framework::standard::{Args, CommandResult};
 use serenity::model::channel::Message;
 use sqlx::{Connection, SqliteConnection};
 
+const HELP_BIRTHDAY: &str = "Commands with prefix ``birthday``:
+``add`` - adds birthday. Usage: ``DD.MM``;
+``edit`` - edits your birthday if it already exists. Usage: ``DD.MM``;
+``remove`` - removes your birthday;
+``get`` - returns your birthday";
+
 #[group]
 #[commands(birthday)]
 struct Birthday;
 
 #[command]
-#[sub_commands(add, edit, remove, mod_menu, get)]
-async fn birthday(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
-    msg.reply(ctx, "what???").await?;
-    Ok(())
-}
-
-#[command]
-#[required_permissions("MANAGE_ROLES")]
-async fn mod_menu(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
-    msg.reply(ctx, "mod_menu").await?;
+#[sub_commands(add, edit, remove, get)]
+async fn birthday(ctx: &Context, msg: &Message) -> CommandResult {
+    msg.channel_id.say(ctx, HELP_BIRTHDAY).await?;
     Ok(())
 }
 
