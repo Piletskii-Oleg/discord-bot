@@ -51,7 +51,6 @@ async fn add(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
                     .execute(&mut db)
                     .await;
 
-
                 if let Err(query_error) = query {
                     msg.reply(ctx, "Couldn't add birthday. Probably it already exists.")
                         .await?;
@@ -101,7 +100,7 @@ async fn edit(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
         match parse_date(maybe_birthday) {
             Ok(birthday) => {
                 let (day, month) = (birthday.day(), birthday.month());
-                let query = sqlx::query!(
+                sqlx::query!(
                     "UPDATE birthdays SET birth_day = ?, birth_month = ? WHERE user_id = ?",
                     day,
                     month,
@@ -171,13 +170,10 @@ async fn get(ctx: &Context, msg: &Message) -> CommandResult {
 }
 
 async fn is_user_in(db: &mut SqliteConnection, user_id: &str) -> bool {
-    match sqlx::query!("SELECT * FROM birthdays WHERE user_id = ?", user_id)
+    sqlx::query!("SELECT * FROM birthdays WHERE user_id = ?", user_id)
         .fetch_one(db)
         .await
-    {
-        Ok(_) => true,
-        Err(_) => false,
-    }
+        .is_ok()
 }
 
 async fn get_birthday(db: &mut SqliteConnection, user_id: &str) -> Result<(u64, u64), sqlx::Error> {
@@ -187,7 +183,7 @@ async fn get_birthday(db: &mut SqliteConnection, user_id: &str) -> Result<(u64, 
     )
     .fetch_one(db)
     .await
-    .and_then(|x| Ok((x.birth_day as u64, x.birth_month as u64)))
+    .map(|x| (x.birth_day as u64, x.birth_month as u64))
 }
 
 fn parse_date(date: &str) -> ParseResult<DateTime<FixedOffset>> {

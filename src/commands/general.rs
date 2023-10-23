@@ -7,7 +7,7 @@ use serenity::prelude::Context;
 use serenity::utils::{content_safe, Color, ContentSafeOptions};
 use std::fmt::Write;
 
-const PATTERNS: [&'static str; 2] = ["0x", "#"];
+const PATTERNS: [&str; 2] = ["0x", "#"];
 
 #[group]
 #[commands(say, commands, latency, set_role)]
