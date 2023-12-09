@@ -150,19 +150,7 @@ async fn main() {
 
     let http = Http::new(&token);
 
-    let db = sqlx::sqlite::SqlitePoolOptions::new()
-        .max_connections(5)
-        .connect_with(
-            sqlx::sqlite::SqliteConnectOptions::new()
-                .filename("database.sqlite")
-                .create_if_missing(true),
-        )
-        .await
-        .expect("Couldn't connect to database");
-    sqlx::migrate!("./migrations")
-        .run(&db)
-        .await
-        .expect("Couldn't migrate database.");
+    setup_db().await;
 
     let (owners, bot_id) = match http.get_current_application_info().await {
         Ok(info) => {
@@ -212,4 +200,20 @@ async fn main() {
     if let Err(why) = client.start().await {
         println!("Client error: {:?}", why);
     }
+}
+
+async fn setup_db() {
+    let db = sqlx::sqlite::SqlitePoolOptions::new()
+        .max_connections(5)
+        .connect_with(
+            sqlx::sqlite::SqliteConnectOptions::new()
+                .filename("database.sqlite")
+                .create_if_missing(true),
+        )
+        .await
+        .expect("Couldn't connect to database");
+    sqlx::migrate!("./migrations")
+        .run(&db)
+        .await
+        .expect("Couldn't migrate database.");
 }
