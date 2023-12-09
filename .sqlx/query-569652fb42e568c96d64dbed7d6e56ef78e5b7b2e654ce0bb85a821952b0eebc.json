@@ -1,0 +1,38 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT * FROM birthdays WHERE user_id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "user_id",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "birth_day",
+        "ordinal": 1,
+        "type_info": "Int64"
+      },
+      {
+        "name": "birth_month",
+        "ordinal": 2,
+        "type_info": "Int64"
+      },
+      {
+        "name": "name",
+        "ordinal": 3,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      true,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "569652fb42e568c96d64dbed7d6e56ef78e5b7b2e654ce0bb85a821952b0eebc"
+}

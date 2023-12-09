@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE birthdays SET birth_day = ?, birth_month = ? WHERE user_id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "8564c98718b6e441a2c17e883f8a70106ab5fa5e02de36c339371a4985780bb9"
+}

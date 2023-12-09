@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM birthdays WHERE user_id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "73f1ddf39754b2a7709332dc6079d1e72f07fc257c1973bb4a868f2ec731dd73"
+}
